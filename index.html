@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#172554">
+  <title>Atmos — Weather Forecast</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="brand" href="#">
+        <span class="brand-icon">☀</span>
+        <span>atmos<span class="brand-dot">.</span></span>
+      </a>
+      <span class="live-label"><span class="live-dot"></span> LIVE WEATHER</span>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">WEATHER AT A GLANCE</p>
+      <h1>Feel the atmosphere.</h1>
+      <p class="subtitle">Discover what's happening outside.</p>
+    </section>
+
+    <form class="search glass" id="searchForm">
+      <span class="search-icon">⌕</span>
+      <input
+        id="cityInput"
+        type="search"
+        placeholder="Search for a city..."
+        aria-label="City name"
+        autocomplete="off"
+        required
+      >
+      <button type="submit" id="searchButton">Search</button>
+    </form>
+
+    <div class="toolbar">
+      <p id="status" role="status">Loading weather...</p>
+      <button class="location-button" id="locationButton" type="button">
+        ◎ Use my location
+      </button>
+    </div>
+
+    <section class="weather-layout">
+      <article class="current-card glass">
+        <div class="current-top">
+          <div>
+            <p class="eyebrow">CURRENT WEATHER</p>
+            <h2 id="cityName">Kolkata</h2>
+            <p class="muted" id="dateText">Your local forecast</p>
+          </div>
+          <div class="weather-symbol" id="mainIcon" aria-hidden="true">☀️</div>
+        </div>
+
+        <div class="temperature-row">
+          <p class="temperature" id="temperature">--<span>°</span></p>
+          <div class="condition">
+            <p id="conditionText">Loading...</p>
+            <p class="muted">Feels like <span id="feelsLike">--°</span></p>
+          </div>
+        </div>
+
+        <div class="current-divider"></div>
+
+        <div class="details-grid">
+          <div class="detail">
+            <span class="detail-icon">💧</span>
+            <div>
+              <p class="muted">Humidity</p>
+              <strong id="humidity">--%</strong>
+            </div>
+          </div>
+          <div class="detail">
+            <span class="detail-icon">🌬️</span>
+            <div>
+              <p class="muted">Wind speed</p>
+              <strong id="wind">-- km/h</strong>
+            </div>
+          </div>
+          <div class="detail">
+            <span class="detail-icon">🌧️</span>
+            <div>
+              <p class="muted">Precipitation</p>
+              <strong id="precipitation">-- mm</strong>
+            </div>
+          </div>
+          <div class="detail">
+            <span class="detail-icon">🌡️</span>
+            <div>
+              <p class="muted">Condition</p>
+              <strong id="smallCondition">--</strong>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="side-card glass">
+        <p class="eyebrow">A LITTLE WEATHER NOTE</p>
+        <div class="side-icon" id="sideIcon">🌤️</div>
+        <h3 id="weatherTip">Stay weather-ready.</h3>
+        <p class="muted" id="weatherDescription">
+          Search for a city to see its latest weather.
+        </p>
+        <div class="side-bottom">
+          <span>✦</span>
+          <span>Powered by Open-Meteo</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="forecast-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PLAN AHEAD</p>
+          <h2>5-day forecast</h2>
+        </div>
+        <span class="forecast-label">UPCOMING DAYS</span>
+      </div>
+
+      <div class="forecast-grid" id="forecastGrid">
+        <div class="forecast-card glass">Loading forecast...</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>Made with <span>♥</span> and a little sunshine.</p>
+      <p>Weather data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></p>
+    </footer>
+  </main>
+</body>
+</html>
