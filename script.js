@@ -1,9 +1,5 @@
 
-const searchForm = document.getElementById("searchForm");
-const cityInput = document.getElementById("cityInput");
-const searchButton = document.getElementById("searchButton");
-const locationButton = document.getElementById("locationButton");
-const statusText = document.getElementById("status");
+const $ = (id) => document.getElementById(id);
 
 const weatherCodes = {
   0: ["Clear sky", "☀️"],
@@ -11,309 +7,360 @@ const weatherCodes = {
   2: ["Partly cloudy", "⛅"],
   3: ["Overcast", "☁️"],
   45: ["Fog", "🌫️"],
-  48: ["Rime fog", "🌫️"],
+  48: ["Depositing rime fog", "🌫️"],
   51: ["Light drizzle", "🌦️"],
   53: ["Drizzle", "🌦️"],
-  55: ["Heavy drizzle", "🌧️"],
-  56: ["Freezing drizzle", "🌧️"],
-  57: ["Freezing drizzle", "🌧️"],
-  61: ["Light rain", "🌦️"],
-  63: ["Rain", "🌧️"],
+  55: ["Dense drizzle", "🌧️"],
+  61: ["Slight rain", "🌦️"],
+  63: ["Moderate rain", "🌧️"],
   65: ["Heavy rain", "🌧️"],
-  66: ["Freezing rain", "🌧️"],
-  67: ["Heavy freezing rain", "🌧️"],
-  71: ["Light snow", "🌨️"],
-  73: ["Snow", "🌨️"],
+  71: ["Slight snow", "🌨️"],
+  73: ["Moderate snow", "❄️"],
   75: ["Heavy snow", "❄️"],
-  77: ["Snow grains", "🌨️"],
   80: ["Rain showers", "🌦️"],
-  81: ["Rain showers", "🌧️"],
-  82: ["Heavy showers", "⛈️"],
-  85: ["Snow showers", "🌨️"],
-  86: ["Heavy snow showers", "❄️"],
+  81: ["Moderate showers", "🌧️"],
+  82: ["Violent showers", "⛈️"],
   95: ["Thunderstorm", "⛈️"],
   96: ["Thunderstorm with hail", "⛈️"],
   99: ["Heavy thunderstorm", "⛈️"]
 };
 
-function getWeatherInfo(code, isDay = 1) {
-  const info = weatherCodes[code] || ["Unknown conditions", "🌤️"];
-
-  if (code === 0 && !isDay) {
-    return ["Clear night", "🌙"];
-  }
-
-  return info;
+function getWeatherInfo(code) {
+  return weatherCodes[code] || ["Unknown", "🌡️"];
 }
 
-function showStatus(message, isError = false) {
-  statusText.textContent = message;
-  statusText.style.color = isError ? "#ffd0d0" : "";
-}
+function setStatus(message, type = "info") {
+  const status = $("status-message");
+  if (!status) return;
 
-function formatDay(dateString) {
-  const date = new Date(`${dateString}T12:00:00`);
-
-  return date.toLocaleDateString("en-US", {
-    weekday: "short"
-  });
+  status.textContent = message;
+  status.dataset.type = type;
 }
 
 async function searchCity(city) {
-  const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
-
-  url.search = new URLSearchParams({
-    name: city,
-    count: "1",
-    language: "en",
-    format: "json"
-  });
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error("Could not search for that city.");
-  }
-
-  const data = await response.json();
-
-  if (!data.results || data.results.length === 0) {
-    throw new Error("City not found. Please try another name.");
-  }
-
-  return data.results[0];
-}
-
-async function getWeather(latitude, longitude, locationName) {
-  showStatus("Getting the latest weather...");
-
-  const url = new URL("https://api.open-meteo.com/v1/forecast");
-
-  url.search = new URLSearchParams({
-    latitude,
-    longitude,
-    current: [
-      "temperature_2m",
-      "relative_humidity_2m",
-      "apparent_temperature",
-      "is_day",
-      "precipitation",
-      "weather_code",
-      "wind_speed_10m"
-    ].join(","),
-    daily: [
-      "weather_code",
-      "temperature_2m_max",
-      "temperature_2m_min",
-      "precipitation_probability_max"
-    ].join(","),
-    timezone: "auto",
-    forecast_days: "5",
-    wind_speed_unit: "kmh"
-  });
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error("Weather service is unavailable. Please try again.");
-  }
-
-  const data = await response.json();
-
-  if (!data.current || !data.daily) {
-    throw new Error("Weather data could not be loaded.");
-  }
-
-  displayCurrentWeather(data, locationName);
-  displayForecast(data.daily);
-
-  showStatus(`Weather updated for ${locationName}.`);
-}
-
-function displayCurrentWeather(data, locationName) {
-  const current = data.current;
-  const [description, icon] = getWeatherInfo(
-    current.weather_code,
-    current.is_day
-  );
-
-  document.getElementById("cityName").textContent = locationName;
-  document.getElementById("dateText").textContent =
-    new Date().toLocaleDateString(undefined, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-
-  document.getElementById("mainIcon").textContent = icon;
-  document.getElementById("temperature").innerHTML =
-    `${Math.round(current.temperature_2m)}<span>°</span>`;
-
-  document.getElementById("conditionText").textContent = description;
-  document.getElementById("feelsLike").textContent =
-    `${Math.round(current.apparent_temperature)}°C`;
-
-  document.getElementById("humidity").textContent =
-    `${current.relative_humidity_2m}%`;
-
-  document.getElementById("wind").textContent =
-    `${Math.round(current.wind_speed_10m)} km/h`;
-
-  document.getElementById("precipitation").textContent =
-    `${current.precipitation} mm`;
-
-  document.getElementById("smallCondition").textContent = description;
-  document.getElementById("sideIcon").textContent = icon;
-
-  const tips = {
-    0: ["Perfectly clear!", "A lovely time to enjoy the outdoors."],
-    1: ["A bright day ahead.", "Enjoy the sunshine and stay hydrated."],
-    2: ["A little cloud cover.", "A comfortable day for outdoor plans."],
-    3: ["Cloudy skies.", "Keep an eye on changing weather."],
-    45: ["A misty atmosphere.", "Take extra care while travelling."],
-    48: ["Foggy conditions.", "Drive carefully and use caution."],
-    51: ["Light drizzle.", "A light jacket may be useful."],
-    53: ["Drizzly weather.", "Consider carrying an umbrella."],
-    55: ["Wet weather ahead.", "An umbrella is a good idea."],
-    61: ["Rain is possible.", "Consider carrying an umbrella."],
-    63: ["Rainy conditions.", "Take an umbrella if heading out."],
-    65: ["Heavy rain!", "Stay safe and avoid waterlogged areas."],
-    71: ["Snowy weather.", "Dress warmly if going outside."],
-    73: ["Snow is falling.", "Wear warm clothing outdoors."],
-    75: ["Heavy snowfall.", "Take care on slippery surfaces."],
-    80: ["Showers possible.", "Keep an umbrella nearby."],
-    81: ["Rain showers.", "Plan outdoor activities carefully."],
-    82: ["Heavy showers!", "Be cautious when travelling."],
-    95: ["Stormy weather!", "Stay indoors if possible."]
-  };
-
-  const tip = tips[current.weather_code] ||
-    ["Stay weather-ready.", "Check the forecast before heading out."];
-
-  document.getElementById("weatherTip").textContent = tip[0];
-  document.getElementById("weatherDescription").textContent = tip[1];
-}
-
-function displayForecast(daily) {
-  const forecastGrid = document.getElementById("forecastGrid");
-  forecastGrid.innerHTML = "";
-
-  daily.time.forEach((date, index) => {
-    const code = daily.weather_code[index];
-    const [description, icon] = getWeatherInfo(code, 1);
-
-    const high = Math.round(daily.temperature_2m_max[index]);
-    const low = Math.round(daily.temperature_2m_min[index]);
-    const rain = daily.precipitation_probability_max[index];
-
-    const card = document.createElement("article");
-    card.className = "forecast-card glass";
-
-    const day = document.createElement("p");
-    day.className = "forecast-day";
-    day.textContent = index === 0 ? "Today" : formatDay(date);
-
-    const weatherIcon = document.createElement("div");
-    weatherIcon.className = "forecast-icon";
-    weatherIcon.textContent = icon;
-
-    const weatherDescription = document.createElement("p");
-    weatherDescription.className = "forecast-description";
-    weatherDescription.textContent = description;
-
-    const temperatures = document.createElement("div");
-    temperatures.className = "forecast-temps";
-
-    const highText = document.createElement("span");
-    highText.textContent = `${high}°`;
-
-    const lowText = document.createElement("span");
-    lowText.textContent = `${low}°`;
-
-    temperatures.append(highText, lowText);
-
-    const rainText = document.createElement("p");
-    rainText.className = "forecast-rain";
-    rainText.textContent =
-      rain == null ? "Rain: --" : `💧 ${rain}% rain`;
-
-    card.append(day, weatherIcon, weatherDescription, temperatures, rainText);
-    forecastGrid.appendChild(card);
-  });
-}
-
-async function loadCityWeather(city) {
   if (!city.trim()) {
-    showStatus("Please enter a city name.", true);
+    setStatus("Please enter a city name.", "error");
     return;
   }
-
-  searchButton.disabled = true;
-  searchButton.textContent = "Loading...";
 
   try {
-    const place = await searchCity(city.trim());
+    setStatus("Searching for city...", "info");
 
-    const locationName = [
-      place.name,
-      place.admin1,
-      place.country
-    ].filter(Boolean).join(", ");
+    const url =
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
 
-    await getWeather(
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error("Unable to search for this city.");
+    }
+
+    const result = await response.json();
+
+    if (!result.results || result.results.length === 0) {
+      throw new Error("City not found. Try another name.");
+    }
+
+    const place = result.results[0];
+
+    await loadWeather(
       place.latitude,
       place.longitude,
-      locationName
+      place.name,
+      place.country || ""
     );
+
   } catch (error) {
-    showStatus(error.message || "Something went wrong.", true);
-  } finally {
-    searchButton.disabled = false;
-    searchButton.textContent = "Search";
+    setStatus(error.message, "error");
   }
 }
 
-searchForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  loadCityWeather(cityInput.value);
-});
+async function loadWeather(latitude, longitude, city, country) {
+  try {
+    setStatus("Loading weather...", "info");
 
-locationButton.addEventListener("click", () => {
-  if (!navigator.geolocation) {
-    showStatus("Location is not supported by this browser.", true);
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,surface_pressure` +
+      `&hourly=temperature_2m,precipitation_probability,weather_code` +
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max` +
+      `&timezone=auto&forecast_days=7`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error("Unable to load weather data.");
+    }
+
+    const data = await response.json();
+
+    renderWeather(data, city, country);
+    setStatus(`Weather updated for ${city}.`, "success");
+
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+function renderWeather(data, city, country) {
+  const current = data.current;
+  const daily = data.daily;
+  const hourly = data.hourly;
+
+  const [description, icon] = getWeatherInfo(current.weather_code);
+
+  setText("city-name", city);
+  setText("country-name", country);
+  setText("current-temp", `${Math.round(current.temperature_2m)}°`);
+  setText("weather-description", description);
+  setText("weather-icon", icon);
+
+  setText("feels-like", `${Math.round(current.apparent_temperature)}°C`);
+  setText("humidity", `${current.relative_humidity_2m}%`);
+  setText("wind-speed", `${current.wind_speed_10m} km/h`);
+  setText("pressure", `${Math.round(current.surface_pressure)} hPa`);
+  setText("precipitation", `${current.precipitation} mm`);
+
+  setText("uv-index", daily.uv_index_max?.[0] ?? "--");
+  setText("sunrise", formatTime(daily.sunrise?.[0]));
+  setText("sunset", formatTime(daily.sunset?.[0]));
+
+  renderHourly(hourly, current.time);
+  renderDaily(daily);
+  renderTemperatureChart(hourly, current.time);
+}
+
+function setText(id, value) {
+  const element = $(id);
+  if (element) {
+    element.textContent = value ?? "--";
+  }
+}
+
+function formatTime(dateString) {
+  if (!dateString) return "--";
+
+  return new Date(dateString).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderHourly(hourly, currentTime) {
+  const container = $("hourly-list");
+
+  if (!container) {
+    console.warn("Missing HTML element: hourly-list");
     return;
   }
 
-  showStatus("Requesting your location...");
+  container.innerHTML = "";
+
+  let startIndex = hourly.time.findIndex(
+    time => time >= currentTime
+  );
+
+  if (startIndex < 0) startIndex = 0;
+
+  const fragment = document.createDocumentFragment();
+
+  hourly.time.slice(startIndex, startIndex + 24).forEach((time, index) => {
+    const i = startIndex + index;
+    const [description, icon] = getWeatherInfo(hourly.weather_code[i]);
+
+    const card = document.createElement("div");
+    card.className = "hourly-card";
+
+    const timeLabel = document.createElement("p");
+    timeLabel.textContent = index === 0
+      ? "Now"
+      : formatTime(time);
+
+    const weatherIcon = document.createElement("div");
+    weatherIcon.textContent = icon;
+
+    const temperature = document.createElement("strong");
+    temperature.textContent =
+      `${Math.round(hourly.temperature_2m[i])}°`;
+
+    const rain = document.createElement("small");
+    rain.textContent =
+      `${hourly.precipitation_probability?.[i] ?? 0}% rain`;
+
+    card.title = description;
+    card.append(timeLabel, weatherIcon, temperature, rain);
+    fragment.appendChild(card);
+  });
+
+  container.appendChild(fragment);
+}
+
+function renderDaily(daily) {
+  const container = $("daily-forecast");
+
+  if (!container) {
+    console.warn("Missing HTML element: daily-forecast");
+    return;
+  }
+
+  container.innerHTML = "";
+
+  const fragment = document.createDocumentFragment();
+
+  daily.time.forEach((date, index) => {
+    const [description, icon] = getWeatherInfo(daily.weather_code[index]);
+
+    const card = document.createElement("div");
+    card.className = "daily-card";
+
+    const day = document.createElement("strong");
+    day.textContent = index === 0
+      ? "Today"
+      : new Date(date + "T12:00:00").toLocaleDateString("en", {
+          weekday: "short"
+        });
+
+    const weatherIcon = document.createElement("span");
+    weatherIcon.textContent = icon;
+
+    const condition = document.createElement("span");
+    condition.textContent = description;
+
+    const temperatures = document.createElement("span");
+    temperatures.textContent =
+      `${Math.round(daily.temperature_2m_max[index])}° / ${Math.round(daily.temperature_2m_min[index])}°`;
+
+    card.append(day, weatherIcon, condition, temperatures);
+    fragment.appendChild(card);
+  });
+
+  container.appendChild(fragment);
+}
+
+function renderTemperatureChart(hourly, currentTime) {
+  const canvas = $("temperature-chart");
+
+  if (!canvas) {
+    console.warn("Missing HTML element: temperature-chart");
+    return;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  let startIndex = hourly.time.findIndex(
+    time => time >= currentTime
+  );
+
+  if (startIndex < 0) startIndex = 0;
+
+  const temperatures = hourly.temperature_2m.slice(
+    startIndex,
+    startIndex + 12
+  );
+
+  if (!temperatures.length) return;
+
+  const width = canvas.clientWidth || 600;
+  const height = 220;
+  const ratio = window.devicePixelRatio || 1;
+
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  canvas.style.height = `${height}px`;
+
+  ctx.scale(ratio, ratio);
+  ctx.clearRect(0, 0, width, height);
+
+  const min = Math.min(...temperatures) - 2;
+  const max = Math.max(...temperatures) + 2;
+  const padding = 30;
+
+  const points = temperatures.map((temp, index) => ({
+    x: padding + index * (width - padding * 2) /
+      Math.max(temperatures.length - 1, 1),
+    y: height - padding -
+      ((temp - min) / (max - min || 1)) * (height - padding * 2)
+  }));
+
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) {
+      ctx.moveTo(point.x, point.y);
+    } else {
+      ctx.lineTo(point.x, point.y);
+    }
+  });
+
+  ctx.strokeStyle = "#8bdcff";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke();
+
+  points.forEach((point, index) => {
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(`${Math.round(temperatures[index])}°`,
+      point.x, point.y - 12);
+  });
+}
+
+function getCurrentLocation() {
+  if (!navigator.geolocation) {
+    setStatus("Geolocation is not supported by your browser.", "error");
+    return;
+  }
+
+  setStatus("Getting your location...", "info");
 
   navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      try {
-        const { latitude, longitude } = position.coords;
-
-        await getWeather(
-          latitude,
-          longitude,
-          "Your current location"
-        );
-      } catch (error) {
-        showStatus(error.message, true);
-      }
+    position => {
+      loadWeather(
+        position.coords.latitude,
+        position.coords.longitude,
+        "Your Location",
+        ""
+      );
     },
-    (error) => {
-      const message = error.code === 1
-        ? "Location permission was denied. Search for a city instead."
-        : "Could not get your location. Please search for a city.";
-
-      showStatus(message, true);
-    },
-    {
-      enableHighAccuracy: false,
-      timeout: 10000
+    () => {
+      setStatus("Location permission denied or unavailable.", "error");
     }
   );
-});
+}
 
-// Load a default city when the app opens.
-loadCityWeather("Kolkata");
+// Search button and Enter key
+const searchButton = $("search-button");
+const searchInput = $("city-input");
+
+if (searchButton) {
+  searchButton.addEventListener("click", () => {
+    searchCity(searchInput?.value || "");
+  });
+}
+
+if (searchInput) {
+  searchInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      searchCity(searchInput.value);
+    }
+  });
+}
+
+// Current location button
+const locationButton = $("location-button");
+
+if (locationButton) {
+  locationButton.addEventListener("click", getCurrentLocation);
+}
+
+// Initial weather
+document.addEventListener("DOMContentLoaded", () => {
+  searchCity("Kolkata");
+});
