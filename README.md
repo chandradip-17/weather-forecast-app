@@ -101,15 +101,15 @@ You can also open `index.html` directly in your browser.
 
 ### 🏠 Top Page
 
-![Atmos Weather Dashboard - Top Page](screenshots/top-page.png)
+![Atmos Top Page View](screenshots/top-view.png)
 
 ### 🌤️ Middle Page
 
-![Atmos Weather Dashboard - Middle Page](screenshots/mid-page.png)
+![Atmos Middle Page View](screenshots/mid-view.png)
 
 ### 🌦️ Lower Page
 
-![Atmos Weather Dashboard - Lower Page](screenshots/lower-page.png)
+![Bottom Page View](screenshots/bottom-view.png)
 
 ## 🌍 API Used
 
