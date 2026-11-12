@@ -821,3 +821,32 @@ button {
     display: none;
   }
 }
+/* Dynamic Weather Themes */
+
+body {
+  transition: background 1s ease;
+}
+
+body.theme-sunny {
+  background: linear-gradient(135deg, #f6a65b, #e87979, #7656a8);
+}
+
+body.theme-cloudy {
+  background: linear-gradient(135deg, #607d9b, #52647e, #343e5b);
+}
+
+body.theme-rainy {
+  background: linear-gradient(135deg, #263b59, #344e70, #17283f);
+}
+
+body.theme-snowy {
+  background: linear-gradient(135deg, #a9c9e8, #729bbd, #536f91);
+}
+
+body.theme-stormy {
+  background: linear-gradient(135deg, #171b35, #353653, #202b42);
+}
+
+body.theme-foggy {
+  background: linear-gradient(135deg, #8999a8, #687b8a, #465b6b);
+}

@@ -104,6 +104,7 @@ async function loadWeather(latitude, longitude, city, country) {
 
 function renderWeather(data, city, country) {
   const current = data.current;
+  applyWeatherTheme(current.weather_code);
   const daily = data.daily;
   const hourly = data.hourly;
 
@@ -364,3 +365,34 @@ if (locationButton) {
 document.addEventListener("DOMContentLoaded", () => {
   searchCity("Kolkata");
 });
+function applyWeatherTheme(weatherCode) {
+  document.body.classList.remove(
+    "theme-sunny",
+    "theme-cloudy",
+    "theme-rainy",
+    "theme-snowy",
+    "theme-stormy",
+    "theme-foggy"
+  );
+
+  let theme = "theme-sunny";
+
+  if ([0, 1].includes(weatherCode)) {
+    theme = "theme-sunny";
+  } else if ([2, 3].includes(weatherCode)) {
+    theme = "theme-cloudy";
+  } else if ([45, 48].includes(weatherCode)) {
+    theme = "theme-foggy";
+  } else if (
+    [51, 53, 55, 56, 57, 61, 63, 65,
+     66, 67, 80, 81, 82].includes(weatherCode)
+  ) {
+    theme = "theme-rainy";
+  } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+    theme = "theme-snowy";
+  } else if ([95, 96, 99].includes(weatherCode)) {
+    theme = "theme-stormy";
+  }
+
+  document.body.classList.add(theme);
+}
